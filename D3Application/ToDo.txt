@@ -1,0 +1,5 @@
+﻿
+2. clean up input presentation //friday & thurs
+3. tests  //friday & thursday
+4. injection for javascript --https://www.pluralsight.com/courses/javascript-systemjs-jspm?utm_source=marketo&utm_medium=email&utm_campaign=Newsletter_15_1118&mkt_tok=3RkMMJWWfF9wsRoluKXOZKXonjHpfsX56uwkW6aylMI%2F0ER3fOvrPUfGjI4HTMtrI%2BSLDwEYGJlv6SgFSbDDMaR1yrgKXxQ%3D
+5. fix line chart issue. //monday

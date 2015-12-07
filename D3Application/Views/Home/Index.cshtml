@@ -1,0 +1,176 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<section class="" id="LineChartCriteria">
+    <div class=" DonutPanel-heading">
+        <span class="FontBig text-center">Selection Criteria</span>
+    </div>
+    <table >
+        <td>
+            <label class="Graph-Label">Display By:</label>
+            <span><input type="radio" name="dateType" value="day" checked="checked" />Day</span>
+            <span><input type="radio" name="dateType" value="month" />Month</span>
+        </td>
+        <td>
+            <label class="Graph-Label">From Date:</label>
+        <input type="date" id="CalendarFrom" required="required"/>
+        </td>
+        <td>
+            <label class="Graph-Label">To Date:</label>
+            <input type="date" id="CalendarTo" required="required" />
+        </td>
+        <td><button onclick=" loadData() ">Generate Graph</button></td>
+    </table>
+    </section>
+<section id="LineChartData">
+    <div class=" DonutPanel-heading">
+        <span class="FontBig text-center">Ins and Out History</span>
+    </div>
+    <div id="lineChart">
+    </div>
+</section>
+
+<script>
+  
+
+   
+    var datetype, minCount, maxCount;
+    datatype="week";
+    minCount=37;
+    maxCount= 125;
+    
+    
+
+        $(document).ready($(function() {
+
+
+            $('#LineChartCriteria').show();
+            $('#LineChartData').hide();
+
+            //$("#CalendarFrom").on("focus", function() {
+            //    if ($(this).hasDatepicker) return;
+            //    $(this).datepicker({
+            //        changeMonth: true,
+            //        changeYear: true,
+            //        showAnim: ''
+            //    });
+            //});
+
+            $("#CalendarFrom").val('01/09/2014');
+            //$("#CalendarTo").on("focus", function() {
+            //    if ($(this).hasDatepicker) return;
+            //    $(this).datepicker({
+            //        changeMonth: true,
+            //        changeYear: true,
+            //        showAnim: ''
+            //    });
+            //});
+
+            $("#CalendarTo").val('01/10/2015');
+        }));
+
+    //function pushToAry(name, val, ary) {
+    //    var obj = {};
+    //    obj[name] = val;
+    //    ary.push(obj);
+    //}
+
+
+    function loadData() {
+        var dateType = $("input:radio[name='dateType']:checked").val();;
+        var startDate = $('#CalendarFrom').val();
+        var endDate = $('#CalendarTo').val();
+
+
+        $.ajax({
+            type: "POST",
+            url: "Home/GetInOutData",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify({ 'aggregate': dateType, 'startDate': startDate, 'endDate': endDate }),
+            success: function (data) {
+
+                //give up some space at the top and bottom.
+                if (data.MinCount >= 5) data.MinCount = data.MinCount - 5;
+                data.MaxCount = data.MaxCount + 5;
+                debugger;
+                switch (dateType) {
+                    case "day":
+                        {
+
+                            var InValues = []; //new Array();
+                            var outValues = []; //new Array();
+                            _.forIn(data.InHistory, function(value) {
+                                if (value.Value > 0) {
+                                    
+                                    InValues.push({ 'key': moment(value.Key), 'value': value.Value });
+
+                                }
+                            });
+                            _.forIn(data.OutHistory, function(value) {
+                                if (value.Value > 0) {
+                                    outValues.push({ 'key': moment(value.Key), 'value': value.Value });
+                                   
+                                }
+                            });
+
+                
+
+                            var dataChart = [
+                                {
+                                    data: InValues,
+                                    label: "Ins"
+                                },
+                                {
+                                    data: outValues,
+                                    label: "Outs"
+                                }
+                            ];
+
+                
+                            $('#LineChartData').show();
+
+               
+                
+                            showChart(dataChart, dateType, data.StartDate, data.EndDate, data.MinCount, data.MaxCount);
+                            break;
+                        }
+                    default:
+                        {
+
+                            var barChartData = []; //new Array();
+                            //debugger;
+                            _.forIn(data.InHistory, function (value) {
+                                if (value.Value > 0) {
+                                    //pushToAry(value.Key, value.Value, InValues);
+                                    barChartData.push({ 'key': moment(value.Key), 'In': Math.round(value.Value), 'out' : 0 });
+
+                                }
+                            });
+                            _.forIn(data.OutHistory, function (value) {
+                                if (value.Value > 0) {
+                                    var idx = _.findIndex(barChartData, function (chr) {
+                                        return moment(chr.key) == moment(value.Key);
+                                    });
+                                    barChartData[idx].out = value.Value;
+                                }
+                            });
+
+                            $('#LineChartData').show();
+                            debugger;
+                            showBarChart(barChartData, dateType, data.MinCount, data.MaxCount);
+                            break;
+                        }
+                }
+                //$('#CalendarFrom').focus();
+            }
+        });
+    }
+
+
+    
+
+    
+    
+    </script>
